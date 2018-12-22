@@ -13,13 +13,15 @@ requirements = [
 
 
 def _version_increment():
-    with open('version.txt', 'r') as f:
+    with open('version_raw.txt', 'r') as f:
         version = int(float(f.read()))
     version += 1
     version = str(version)
-    with open('version.txt', 'w') as f:
+    with open('version_raw.txt', 'w') as f:
         f.write(version)
     version = '.'.join(str(version).zfill(3))
+    with open('version_digitgood.txt', 'w') as f:
+        f.write(version)
     return version
 
 

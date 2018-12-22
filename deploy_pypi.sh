@@ -4,10 +4,8 @@ rm -rf dist
 rm -rf build
 rm -rf *.egg-info
 rm -rf microdb-*.*.*
-version=$(cat version.txt)
+version=$(cat version_digitgood.txt)
+commit_msg=$(cat commit_message.txt)
 git add .
-git commit -m version$version
+git commit -m 'version${version} ${commit_msg}'
 git push
-sleep 30
-pip install microdb --upgrade
-read -sp 'enter something to finish' dummy
