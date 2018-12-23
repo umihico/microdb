@@ -14,7 +14,6 @@ dirname = "version_texts/"
 
 
 def _version_increment():
-<<<<<<< Updated upstream
     with open('version_texts/version_raw.txt', 'r') as f:
         version = int(float(f.read()))
     version += 1
@@ -23,16 +22,6 @@ def _version_increment():
         f.write(version)
     version = '.'.join(str(version).zfill(3))
     with open('version_texts/version_digitgood.txt', 'w') as f:
-=======
-    with open(dirname + 'version_raw.txt', 'r') as f:
-        version = int(float(f.read()))
-    version += 1
-    version = str(version)
-    with open(dirname + 'version_raw.txt', 'w') as f:
-        f.write(version)
-    version = '.'.join(str(version).zfill(3))
-    with open(dirname + 'version_digitgood.txt', 'w') as f:
->>>>>>> Stashed changes
         f.write(version)
     return version
 
