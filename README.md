@@ -15,8 +15,8 @@ This database works as list of dictionaries.
  {'job': 'study', 'name': 'Alice', 'status': 'undone'},
  {'job': 'clean', 'name': 'Bob', 'status': 'undone'},
  {'job': 'study', 'name': 'Bob', 'status': 'undone'}]
- >>> mdb.pprint_all_as_grid()
- [['name', 'status', 'job'],
+>>> mdb.pprint_all_as_grid()
+[['name', 'status', 'job'],
   ['Alice', 'undone', 'clean'],
   ['Alice', 'undone', 'study'],
   ['Bob', 'undone', 'clean'],
@@ -33,8 +33,7 @@ Only 'upsert' method add data, or overwrite if the "key" is already in use.
  {'job': 'study', 'name': 'Bob', 'status': 'undone'},
  {'job': 'clean', 'name': 'Eve', 'status': 'undone'}] # new
 ```  
-Key is tupled values of partition_keys. Use 'gen_key' method to see.
-key can be checked the existence in database.  
+Key is tupled values of partition_keys. Use 'gen_key' method to see.  
 ```
 >>> mdb.gen_key({'job': 'clean', 'name': 'Bob', 'what': 'ever'})
 ('clean', 'Bob')
@@ -43,7 +42,7 @@ key can be checked the existence in database.
 ```
 >>> {'job': 'clean', 'name': 'Bob', 'what': 'ever'} in mdb
 True
->>> mdb.get({'job': 'study', 'name': 'Alice'})
+>>> mdb.get({'job': 'study', 'name': 'Alice','whaat':'everr'})
 {'status': 'undone', 'job': 'study', 'name': 'Alice'}
 >>> mdb.get({'wrong': 'key'},'when_not_exist') # same as dict.get
 'when_not_exist'
