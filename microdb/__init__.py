@@ -29,20 +29,27 @@ class MicroDB():
                 filenames = list_of_list[0]
                 for row in list_of_list[1:]:
                     dictionary = {fn: v for fn, v in zip(filenames, row)}
-                    key = self._generate_hasekey(dictionary)
+                    key = self.gen_key(dictionary)
                     self._dict[key] = dictionary
             else:
                 dictionaries = values
-                self._dict = {self._generate_hasekey(
+                self._dict = {self.gen_key(
                     dictionary): dictionary for dictionary in dictionaries}
 
-    def save(self):
+    def save(self, filename=None):
         """
         writes data on disk as list of dictionaries.
         """
         with self._rlock:
-            with _codecs.open(self.filename, 'w', 'utf-8') as f:
-                print(list(self._dict.values()), file=f, flush=True)
+            filename = filename or self.filename
+            data = list(self._dict.values())
+            self._write(filename, data)
+
+    def _write(self, filename, data):
+        """inside func of save method"""
+        with self._rlock:
+            with _codecs.open(filename, 'w', 'utf-8') as f:
+                print(data, file=f, flush=True)
 
     def _get_fieldnames(self):
         """
@@ -55,11 +62,9 @@ class MicroDB():
             fieldnames = list(fieldnames)
             return fieldnames
 
-    def save_as_grid(self):
-        """
-        same as 'save' method but as list of list. Good for decreasing amount of file when all dictionary has same keys.
-        """
+    def _gen_grid(self):
         with self._rlock:
+
             fieldnames = self._get_fieldnames()
             grid = [fieldnames, ]
             for d in self._dict.values():
@@ -70,26 +75,46 @@ class MicroDB():
                     raise Exception(
                         f"Dict {d} dosen't have these keys:{lack_keys}")
                 grid.append(row)
-            with _codecs.open(self.filename, 'w', 'utf-8') as f:
-                print(grid, file=f, flush=True)
+            return grid
+
+    def save_as_grid(self, filename=None):
+        """
+        same as 'save' method but as list of list. Good for decreasing amount of file when all dictionary has same keys.
+        """
+        with self._rlock:
+            data = self._gen_grid()
+            filename = filename or self.filename
+            self._write(filename, data)
 
     def upsert(self, dictionary):
         """
         inserts new dictionary. if same partition_keys dictionary is already there, it will be overwritten.
         """
         with self._rlock:
-            self._dict[self._generate_hasekey(dictionary)] = dictionary
+            self._dict[self.gen_key(dictionary)] = dictionary
 
-    def _generate_hasekey(self, dictionary):
+    def gen_key(self, dictionary):
         return tuple([dictionary.get(k) for k in self.partition_keys])
 
-    def erase_all():
+    def erase_all(self):
         "erase all data and write empty dict on disk"
         self._dict = {}
         self.save()
 
+    def lock(self):
+        return self._rlock
+
+    def get(self, key, d=None):
+        return self._dict.get(self.gen_key(key), d)
+
+    def __str__(self):
+        return str(list(self._dict.values()))
+
     def pprint_all(self):
         _pprint.pprint(list(self._dict.values()))
+
+    def pprint_all_as_grid(self):
+        _pprint.pprint(self._gen_grid())
 
     def all(self):
         yield from self._dict.values()
@@ -98,7 +123,7 @@ class MicroDB():
         return len(self._dict)
 
     def __contains__(self, key):
-        return bool(key in self._dict)
+        return bool(self.gen_key(key) in self._dict)
 
     def __delitem__(self, key):
         del self._dict[key]
