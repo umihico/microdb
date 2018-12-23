@@ -1,7 +1,107 @@
 
+import threading as _threading
+import ast as _ast
+from pprint import pformat as _pformat
+import os as _os
+import codecs as _codecs
+import pprint as _pprint
+
 
 class MicroDB():
     """In-memory, Hash-mapping, Disk-writable, Thread-safe database."""
 
-    def __init__(self, filename):
+    def __init__(self, filename, partition_keys):
+        self._rlock = _threading.RLock()
+        self.partition_keys = partition_keys
         self.filename = filename
+        self._load()
+
+    def _load(self):
+        self._dict = {}
+        with self._rlock:
+            if not _os.path.exists(self.filename):
+                return
+            with _codecs.open(self.filename, 'r', 'utf-8') as f:
+                values = _ast.literal_eval(f.read())
+            saved_as_grid = bool(isinstance(values[0], list))
+            if saved_as_grid:
+                list_of_list = values
+                filenames = list_of_list[0]
+                for row in list_of_list[1:]:
+                    dictionary = {fn: v for fn, v in zip(filenames, row)}
+                    key = self._generate_hasekey(dictionary)
+                    self._dict[key] = dictionary
+            else:
+                dictionaries = values
+                self._dict = {self._generate_hasekey(
+                    dictionary): dictionary for dictionary in dictionaries}
+
+    def save(self):
+        """
+        writes data on disk as list of dictionaries.
+        """
+        with self._rlock:
+            with _codecs.open(self.filename, 'w', 'utf-8') as f:
+                print(list(self._dict.values()), file=f, flush=True)
+
+    def _get_fieldnames(self):
+        """
+        exacts keys from dictionaries. Good to fill before 'save_as_grid' method.
+        """
+        with self._rlock:
+            fieldnames = set()
+            for d in self._dict.values():
+                fieldnames.update(d.keys())
+            fieldnames = list(fieldnames)
+            return fieldnames
+
+    def save_as_grid(self):
+        """
+        same as 'save' method but as list of list. Good for decreasing amount of file when all dictionary has same keys.
+        """
+        with self._rlock:
+            fieldnames = self._get_fieldnames()
+            grid = [fieldnames, ]
+            for d in self._dict.values():
+                try:
+                    row = [d[k] for k in fieldnames]
+                except KeyError as e:
+                    lack_keys = [fn for fn in fieldnames if fn not in d]
+                    raise Exception(
+                        f"Dict {d} dosen't have these keys:{lack_keys}")
+                grid.append(row)
+            with _codecs.open(self.filename, 'w', 'utf-8') as f:
+                print(grid, file=f, flush=True)
+
+    def upsert(self, dictionary):
+        """
+        inserts new dictionary. if same partition_keys dictionary is already there, it will be overwritten.
+        """
+        with self._rlock:
+            self._dict[self._generate_hasekey(dictionary)] = dictionary
+
+    def _generate_hasekey(self, dictionary):
+        return tuple([dictionary.get(k) for k in self.partition_keys])
+
+    def erase_all():
+        "erase all data and write empty dict on disk"
+        self._dict = {}
+        self.save()
+
+    def pprint_all(self):
+        _pprint.pprint(list(self._dict.values()))
+
+    def all(self):
+        yield from self._dict.values()
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __contains__(self, key):
+        return bool(key in self._dict)
+
+    def __delitem__(self, key):
+        del self._dict[key]
+
+    def __getitem__(self, key):
+        return self._dict[key]
