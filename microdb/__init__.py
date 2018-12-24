@@ -23,6 +23,8 @@ class MicroDB():
                 return
             with _codecs.open(self.filename, 'r', 'utf-8') as f:
                 values = _ast.literal_eval(f.read())
+            if len(values) == 0:
+                return
             saved_as_grid = bool(isinstance(values[0], list))
             if saved_as_grid:
                 list_of_list = values

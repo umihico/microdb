@@ -16,6 +16,9 @@ testpartition_keys = ['job', 'name']
 def test():
     if os.path.exists(filename):
         os.remove(filename)
+
+    mdb = MicroDB(filename, testpartition_keys)
+    mdb.erase_all()
     mdb = MicroDB(filename, testpartition_keys)
     for d in test_data:
         mdb.upsert(d)
