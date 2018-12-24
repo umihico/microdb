@@ -1,5 +1,6 @@
-# microdb
-In-memory, Hash-mapping, Disk-writable, Thread-safe database.
+# microdb 
+In-memory, Hash-mapping, Disk-writable, Thread-safe database.  
+[![PyPI version](https://badge.fury.io/py/microdb.svg)](https://badge.fury.io/py/microdb)
 
 Installation with pip
 ```
