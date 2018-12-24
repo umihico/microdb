@@ -1,1 +1,1 @@
-fixed bug when loads empty [] list
+update README

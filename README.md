@@ -1,4 +1,4 @@
-# microdb 
+# microdb
 In-memory, Hash-mapping, Disk-writable, Thread-safe database.  
 [![PyPI version](https://badge.fury.io/py/microdb.svg)](https://badge.fury.io/py/microdb)
 
@@ -36,6 +36,7 @@ Only 'upsert' method add data, or overwrite if the "key" is already in use.
 ```  
 Key is tupled values of partition_keys. Use 'gen_key' method to see.  
 ```
+>>> # mdb = microdb.MicroDB("testdata/mdb.json", partition_keys=['job', 'name'])
 >>> mdb.gen_key({'job': 'clean', 'name': 'Bob', 'what': 'ever'})
 ('clean', 'Bob')
 ```
